@@ -11,7 +11,7 @@ from colorama import Fore, Back, Style
 
 colorama.init(autoreset=True)
 
-REMOVE_ORIGINAL=False
+REMOVE_ORIGINAL=True
 #普通
 #GLOBE_LEVEL = "standard"
 #rate="128k"
@@ -21,7 +21,7 @@ rate="320k"
 #极高
 #GLOBE_LEVEL = "lossless"
 #rate="320k"
-#无损 may need login or vip<<不建议,此种情况下音频码率已经超过了MP3协议的最高限制，所以会被压缩到320k,而且本人认为只要您不是什么世界级音乐家,也听不出来跟普通音质的区别
+#无损 may need login or vip<<不建议,此种情况下音频码率已经超过了MP3协议的最高限制，所以会被压缩到320k.而且本人认为只要您不是什么世界级音乐家,就听不出来跟普通音质的区别(笑)
 #过度追求高bit rate是会过犹不及的，因为这样会导致音频文件过大，而且音质也不会有太大的提升
 #讲个笑话,之前假期我有个补课班的哥们,当时补课班的网也不是特别好,但他看视频坚持开1080P高码率结果卡成狗.我问他为啥不把画质调低点,他说因为他开了大会员,得好好享受下.但是我看他那个小手机的屏幕,最多分辨率也就720P(doge)
 #GLOBE_LEVEL = " hires"
@@ -94,29 +94,19 @@ def down(song_id,foder_name):
         wget.download(result["url"], out=os.path.join(".",foder_name,file_name+".flac"))
         rename(result["id"] ,os.path.join(".",foder_name,file_name+".flac"),detail)
 
-def main(type,id):
-#    if type == "a":
-#        os.mkdir("./a-"+str(id))
-#        ablun = apis.album.GetAlbumDetailV1(id, level=GLOBE_LEVEL)
-#        for song in ablun["songs"]:
-#            down(song["id"],song["name"],"a-"+str(id))
-#    elif type == "p":
-    if type == "p":
-        playlist = apis.playlist.GetPlaylistInfo(id,)
-        if playlist["code"] != 200:
-            print(Back.RED +"Error: ", "你大概是没登陆，登录以查看私有歌单（默认的喜欢也算）")
-            return
-        folderTitle = validateTitle(playlist["playlist"]["name"])
-        try:
-            os.mkdir("./"+folderTitle)
-        except:
-            print(Back.RED +"Error: ", "folder exist（已经好像下载过了呢）")
-            exit(1)
-        for song in playlist["playlist"]["trackIds"]:
-            down(song["id"],folderTitle)
-    else:
-        print(Back.RED +"Error: ", "type error")#暂时木的用
+def main(id):
+    playlist = apis.playlist.GetPlaylistInfo(id,)
+    if playlist["code"] != 200:
+        print(Back.RED +"Error: ", "你大概是没登陆，登录以查看私有歌单（默认的喜欢也算）")
+        return
+    folderTitle = validateTitle(playlist["playlist"]["name"])
+    try:
+        os.mkdir("./"+folderTitle)
+    except:
+        print(Back.RED +"Error: ", "folder exist（已经好像下载过了呢）")
+        exit(1)
+    for song in playlist["playlist"]["trackIds"]:
+        down(song["id"],folderTitle)
 
 if __name__ == "__main__":
-    #main(input("a: ablun;p:playlist \n"),input("id:"))
-    main("p", input("song list id:"))
+    main(input("song list id:"))
