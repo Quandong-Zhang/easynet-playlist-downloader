@@ -1,18 +1,23 @@
-from pyncm import apis
 import os
 import requests
 import wget
 import eyed3
-from eyed3.id3.frames import ImageFrame
 import time
 import re
 import colorama
+from time import sleep
+from pyncm import apis
 from colorama import Fore, Back, Style
+from eyed3.id3.frames import ImageFrame
 
 colorama.init(autoreset=True)
 
+#PYNCM_DEBUG="WARNING"
+PYNCM_DEBUG="DEBUG"
+
 REMOVE_ORIGINAL=True
 RENAME_TWICE=True
+GLOBE_SLEEP_TIME=7
 #普通
 #GLOBE_LEVEL = "standard"
 #rate="128k"
@@ -71,6 +76,7 @@ def rename(song_id,file_path,detail_object):
         print(Back.RED +"Error: ", "你大概是没登陆或者缺少钞能力")
         return
     lrcobj = apis.track.GetTrackLyrics(song_id)
+    sleep(GLOBE_SLEEP_TIME)
     try:
         lrcobj["tlyric"]["lyric"]
     except:
@@ -88,6 +94,8 @@ def rename(song_id,file_path,detail_object):
     album=song_obj["al"]["name"]
     if not os.path.exists('./img_cache/'+str(song_id)+'_cover.jpg'):
         wget.download(song_obj["al"]["picUrl"], out='./img_cache/'+str(song_id)+'_cover.jpg')
+    if song_obj["publishTime"] <1:
+        song_obj["publishTime"]=0
     tupTime=time.localtime(song_obj['publishTime']/1000)
     dateToTag=time.strftime("%Y-%m-%d", tupTime)
     audiofile.tag.title = title
@@ -105,12 +113,14 @@ def rename(song_id,file_path,detail_object):
 
 def down(song_id,foder_name):
     results=apis.track.GetTrackAudioV1([song_id], level=GLOBE_LEVEL ,encodeType="flac")
+    sleep(GLOBE_SLEEP_TIME)
     if results["data"][0]["code"] != 200:
         print(Back.RED +"Error: ", "你大概是没登陆或者缺少钞能力")
         return
     for result in results["data"]:
         print(Back.GREEN +"Downloading" , "id:",result["id"], result["size"]/(1048576), "MB", "MD5", result["md5"],"\n")
         detail = apis.track.GetTrackDetail([result["id"]],) #获取歌曲信息
+        sleep(GLOBE_SLEEP_TIME)
         file_name = validateTitle(detail["songs"][0]["name"]) #detail里面的 alia 里面应该是歌曲的别名,但网易云或者用户可能没按协议办事,故在此忽略不做处理(谁家歌曲别名叫'2008年11月21日实况录音')
         if os.path.exists(os.path.join(".",foder_name,file_name+".mp3")):
             print(Back.RED +"Error: ", "file exist(已存在),应该是之前下载过了")
@@ -122,6 +132,7 @@ def down(song_id,foder_name):
 
 def main(id):
     playlist = apis.playlist.GetPlaylistInfo(id,)
+    sleep(GLOBE_SLEEP_TIME)
     if playlist["code"] != 200:
         print(Back.RED +"Error: ", "你大概是没登陆,登录以查看私有歌单(默认的喜欢也算)")
         return
@@ -135,7 +146,7 @@ def main(id):
             print(Back.BLUE +"将重命名下载过的,此过程中ffmpeg会报错,忽略即可" , "\n")
     if not os.path.exists("./"+folderTitle+"/README.txt"):
         with open("./"+folderTitle+"/README.txt", "w", encoding="utf-8") as f:
-            f.write("歌单名："+playlist["playlist"]["name"]+"\n"+"id: "+str(playlist["playlist"]["id"])+"\n"+"URL :https://music.163.com/#/my/m/music/playlist?id="+str(playlist["playlist"]["id"]))
+            f.write("歌单名："+playlist["playlist"]["name"]+"\n"+"id: "+str(playlist["playlist"]["id"])+"\n"+"URL :https://music.163.com/#/playlist?id="+str(playlist["playlist"]["id"]))
     for song in playlist["playlist"]["trackIds"]:
         down(song["id"],folderTitle)
 
