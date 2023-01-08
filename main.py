@@ -36,7 +36,12 @@ rate="320k"
 
 #login区,不想登录的话就用第一行,想的话参照 https://github.com/mos9527/pyncm/blob/master/pyncm/apis/login.py 改
 #不用次次都运行,运行第一次之后注释掉就好
-#apis.login.LoginViaAnonymousAccount()
+try:
+    apis.login.LoginViaAnonymousAccount()
+except:
+    print(Back.RED +"Error: ", "请检查网络连接,关闭V2ray等科学上网软件或将其SSL证书设为可受信任")
+    sleep(60)
+    exit(1)
 
 def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]" # '/ \ : * ? " < > |'
@@ -134,7 +139,7 @@ def main(id):
     playlist = apis.playlist.GetPlaylistInfo(id,)
     sleep(GLOBE_SLEEP_TIME)
     if playlist["code"] != 200:
-        print(Back.RED +"Error: ", "你大概是没登陆,登录以查看私有歌单(默认的喜欢也算)")
+        print(Back.RED +"Error: ", "你大概是没登陆,登录以查看私有歌单(默认的喜欢也算)\n或者该歌单不存在")
         return
     folderTitle = validateTitle(playlist["playlist"]["name"])
     try:
@@ -155,3 +160,4 @@ if __name__ == "__main__":
         main(input("song list id:"))
     except Exception(e):
         print(Back.RED +"Error: ", e)
+        sleep(60)
