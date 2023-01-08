@@ -151,4 +151,7 @@ def main(id):
         down(song["id"],folderTitle)
 
 if __name__ == "__main__":
-    main(input("song list id:"))
+    try:
+        main(input("song list id:"))
+    except Exception(e):
+        print(Back.RED +"Error: ", e)
