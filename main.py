@@ -48,7 +48,6 @@ def validateTitle(title):
     new_title = re.sub(rstr, "_", title) # 替换为下划线
     return new_title
 
-
 def chackFFMPEG():
     if os.system("ffmpeg -version") != 0:
         print(Back.RED +"Error: ", "ffmpeg not found,装个ffmpeg呗~~~")
